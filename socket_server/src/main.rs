@@ -8,7 +8,7 @@ async fn open_tcp(server_addr: &str) {
 
     loop {
         // 유저가 접속할 때마다 받기
-        let (mut socket, _addr) = listener.accept().await.unwrap();
+        let (mut socket, addr) = listener.accept().await.unwrap();
 
         let tx = tx.clone();
         let mut rx = tx.subscribe();
@@ -19,17 +19,20 @@ async fn open_tcp(server_addr: &str) {
             let mut line = String::new();
 
             loop {
-                let bytes_read = reader.read_line(&mut line).await.unwrap();
-                if bytes_read == 0 {
-                    break;
-                };
-
-                tx.send(line.clone()).unwrap();
-                let msg = rx.recv().await.unwrap();
-
-                writer.write_all(msg.as_bytes()).await.unwrap();
-                println!("{}",msg);
-                line.clear();
+                tokio::select! {
+                    result = reader.read_line(&mut line) => {
+                        if result.unwrap() == 0 {
+                            break;
+                        }
+                        tx.send(line.clone()).unwrap();
+                        line.clear();
+                    }
+                    result = rx.recv() => {
+                        let msg = result.unwrap();
+                        writer.write_all(msg.as_bytes()).await.unwrap();
+                        println!("{}: {}", addr.to_string(), msg);
+                    }
+                }
             }
         });
     }

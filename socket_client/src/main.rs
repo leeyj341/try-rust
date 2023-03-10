@@ -1,4 +1,4 @@
-use tokio::io::AsyncWriteExt;
+use tokio::io::{AsyncWriteExt, AsyncReadExt};
 use tokio::net::TcpStream;
 use std::error::Error;
 use std::io;
@@ -11,6 +11,10 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     println!("connect stream");
 
     loop {
+        tokio::spawn(async move {
+
+        });
+
         let mut read_line = String::new();
         let _result = match io::stdin().read_line(&mut read_line){
             Ok(n) => {
@@ -22,6 +26,9 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
             },
             Err(error) => eprintln!("{}", error)
         };
+        let mut line = [];
+        let _result = stream.read(&mut line).await;
+        println!("from server: {:?}", std::str::from_utf8(&line));
     }
     // let result = stream.write(b"hello world\n").await;
     // Ok(())
