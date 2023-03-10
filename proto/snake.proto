@@ -1,0 +1,74 @@
+// 위치 좌표는 소수점 넷째자리까지 정수형으로 전송한다.
+// ex) 1200.1234 => 12,001,234
+// 좌표 + 방향 벡터(단위벡터로..)
+// 초당 30fps
+
+
+enum BodyPart {
+    HEAD = 1;
+    BODY = 2;
+    DIRECTION = 3;
+}
+enum BodyStatus {
+    IDLE = 1;
+    INVISIBLE = 2;
+    SPEEDUP = 3;
+    SLOW = 4;
+}
+message Position {
+    int32 posX = 1;
+    int32 posY = 2;
+}
+message UserPosition {
+    BodyPart part = 1;                        // 머리, 몸통, 꼬리 구분
+    BodyStatus status = 2;
+    Position position = 3;
+}
+message UserData {
+    uint64 userUid = 1;
+    int32 characterID = 2;                    // 지렁이 캐릭터 선택 정보
+    repeated UserPosition positionList = 3;   // 마지막 idx가 꼬리의 위치
+}
+
+// 유저 지렁이 데이터
+// 클라 -> 서버
+message C2S_UserData{
+    UserData userData = 1;
+}
+// 서버 -> 클라
+message S2C_UserData {
+    repeated UserData userDataList = 1;
+}
+
+// 충돌정보
+// 클라 -> 서버
+message C2S_CollisionData {
+    int32 sourceID = 1;                         // 충돌했을 때 "나"의 아이디
+    int32 destID = 2;                           // 충돌했을 때 "타겟"의 아이디
+    int32 targetIdx = 3;                        // 충돌한 타겟의 index
+}
+// 서버 -> 클라
+message S2C_CollisionData {
+    int32 destID = 1;                           // 충돌한 대상의 아이디
+}
+
+//---------------------------------------------------------------
+
+// 먹이 스폰 좌표 & 먹이 충돌 정보 추후 고려
+// 미리 테이블에 담아놓을지, 직접 스폰 좌표 보내줄지?
+message FoodData {
+    repeated Position positions = 1;
+}
+
+
+
+// kill 수가 올라가거나 , 순위 변경 시
+// 서버 -> 클라
+message BoardStatus {
+    int32 rank = 1;
+    int32 killCount = 2;
+}
+// 미정....
+// message SkillData {
+//    int32 skillID = 1;
+// }
